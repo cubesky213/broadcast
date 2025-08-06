@@ -12,6 +12,8 @@
       background-color: #ffffff;
     }
 
+    
+
     #audio-controls {
       margin-top: 30px;
     }
@@ -45,13 +47,53 @@
     }
 
     #nextStopButton:active {
-      transform: scale(0.95);
+      transform: scale(10.95);
+    }
+
+    .selectbox-3 {
+      display: inline-flex;
+      align-items: center;
+      position: relative;
+      margin-top: 20px;
+    }
+
+    .selectbox-3::after {
+      position: absolute;
+      right: 15px;
+      width: 10px;
+      height: 7px;
+      background-color: #535353;
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
+      content: '';
+      pointer-events: none;
+    }
+
+    .selectbox-3 select {
+      appearance: none;
+      min-width: 230px;
+      height: 2.8em;
+      padding: .4em calc(.8em + 30px) .4em .8em;
+      border: 1px solid #d0d0d0;
+      border-radius: 3px;
+      background-color: #fff;
+      color: #333333;
+      font-size: 1em;
+      cursor: pointer;
     }
   </style>
 </head>
 
 <body>
   
+
+  <div class="selectbox-3">
+    <select id="routeSelector" onchange="changeRoute()">
+      <option value="1">１系統</option>
+      <option value="2">２系統（準備中）</option>
+      <option value="3">３系統（準備中）</option>
+    </select>
+  </div>
+
   <div id="audio-controls">
     <button onclick="playPrevious()">前</button>
     <button onclick="playDoorOpen()">ドア開</button>
@@ -69,19 +111,34 @@
     const audio = document.getElementById("audio");
     const stationNameDisplay = document.getElementById("stationName");
     const nextStopButton = document.getElementById("nextStopButton");
+    const routeSelector = document.getElementById("routeSelector");
 
-    const audioFiles = [ 
-      { src: "0100.mp3", name: "Null" },
-      { src: "0101.mp3", name: "テキスタイルシティ" },
-      { src: "0102.mp3", name: "ピルボックスヒル" },
-      { src: "0103.mp3", name: "ダウンタウン" },
-      { src: "0104.mp3", name: "バートン駅前" },
-      { src: "0105.mp3", name: "ウエストバインウッド" },
-      { src: "0106.mp3", name: "ロックフォードヒルズ" },
-      { src: "0107.mp3", name: "ポートラドライブ駅前" },
-      { src: "0108.mp3", name: "ゴルフ場前" }
-    ];
+    const routes = {
+      "1": [
+        { src: "0100.mp3", name: "Null" },
+        { src: "0101.mp3", name: "テキスタイルシティ" },
+        { src: "0102.mp3", name: "ピルボックスヒル" },
+        { src: "0103.mp3", name: "ダウンタウン" },
+        { src: "0104.mp3", name: "バートン駅前" },
+        { src: "0105.mp3", name: "ウエストバインウッド" },
+        { src: "0106.mp3", name: "ロックフォードヒルズ" },
+        { src: "0107.mp3", name: "ポートラドライブ駅前" },
+        { src: "0108.mp3", name: "ゴルフ場前" }
+      ],
+      "2": [
+        { src: "0200.mp3", name: "Null" },
+        { src: "0201.mp3", name: "0201" },
+        { src: "0202.mp3", name: "0202" }
+      ],
+      "3": [
+        { src: "0300.mp3", name: "Null" },
+        { src: "0301.mp3", name: "0301" },
+        { src: "0302.mp3", name: "0302" }
+      ]
+    };
 
+    let currentRoute = "1";
+    let audioFiles = routes[currentRoute];
     let currentIndex = 0;
     let nextStopPlayed = false;
 
@@ -133,11 +190,9 @@
       nextStopPlayed = true;
 
       if (!audio.paused && !audio.ended) {
-        // 他の音源が再生中なら NextStop.mp3 を別の Audio インスタンスで再生
         const nextStopAudio = new Audio("NextStop.mp3");
         nextStopAudio.play();
 
-        // 元の音源が終わったら 0.5 秒後に NextStop2.mp3 を再生
         const checkInterval = setInterval(() => {
           if (audio.ended) {
             clearInterval(checkInterval);
@@ -147,9 +202,7 @@
             }, 500);
           }
         }, 100);
-
       } else {
-        // 他の音源が再生されていなければ、NextStop → NextStop2 を順番に再生
         audio.src = "NextStop.mp3";
         audio.play();
         audio.onended = () => {
@@ -160,6 +213,13 @@
           }, 500);
         };
       }
+    }
+
+    function changeRoute() {
+      currentRoute = routeSelector.value;
+      audioFiles = routes[currentRoute];
+      currentIndex = 0;
+      playCurrentAudio();
     }
 
     playCurrentAudio();
