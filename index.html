@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>バス車内放送</title>
+  
   <style>
     body {
       font-family: sans-serif;
@@ -12,7 +12,9 @@
       background-color: #ffffff;
     }
 
-    
+    h1 {
+      margin-top: 20px;
+    }
 
     #audio-controls {
       margin-top: 30px;
@@ -31,7 +33,7 @@
     }
 
     button:hover {
-      background-color: #45a049;
+      background-color: #0f518a;
     }
 
     #stationName {
@@ -47,7 +49,7 @@
     }
 
     #nextStopButton:active {
-      transform: scale(10.95);
+      transform: scale(0.95);
     }
 
     .selectbox-3 {
@@ -84,13 +86,12 @@
 </head>
 
 <body>
-  
 
   <div class="selectbox-3">
     <select id="routeSelector" onchange="changeRoute()">
-      <option value="1">１系統</option>
-      <option value="2">２系統（準備中）</option>
-      <option value="3">３系統（準備中）</option>
+      <option value="1">1系統</option>
+      <option value="2">2系統（準備中）</option>
+      <option value="3">3系統（準備中）</option>
     </select>
   </div>
 
@@ -127,13 +128,13 @@
       ],
       "2": [
         { src: "0200.mp3", name: "Null" },
-        { src: "0201.mp3", name: "0201" },
-        { src: "0202.mp3", name: "0202" }
+        { src: "0201.mp3", name: "2系統・停留所A" },
+        { src: "0202.mp3", name: "2系統・停留所B" }
       ],
       "3": [
         { src: "0300.mp3", name: "Null" },
-        { src: "0301.mp3", name: "0301" },
-        { src: "0302.mp3", name: "0302" }
+        { src: "0301.mp3", name: "3系統・停留所A" },
+        { src: "0302.mp3", name: "3系統・停留所B" }
       ]
     };
 
@@ -182,6 +183,10 @@
     function playDoorClose() {
       audio.src = "doorclose.mp3";
       audio.play();
+      audio.onended = () => {
+        audio.onended = null;
+        playNext();
+      };
     }
 
     function playNextStop() {
