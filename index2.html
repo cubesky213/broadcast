@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>バス車内放送</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background-color: #ffffff;
+    }
+
+    h1 {
+      margin-top: 20px;
+    }
+
+    #audio-controls {
+      margin-top: 30px;
+    }
+
+    button {
+      margin: 10px;
+      width: 240px;
+      padding: 10px 0px;
+      font-size: 1.5em;
+      border: none;
+      border-radius: 10px;
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    #stationName {
+      margin-top: 20px;
+      font-size: 2em;
+    }
+
+    #nextStopButton {
+      width: 50%;
+      height: auto;
+      margin-top: 20px;
+      transition: transform 0.1s ease;
+    }
+
+    #nextStopButton:active {
+      transform: scale(0.95);
+    }
+  </style>
+</head>
+
+<body>
+  <h1>バス車内放送</h1>
+
+  <div id="audio-controls">
+    <button onclick="playPrevious()">前</button>
+    <button onclick="playDoorOpen()">ドア開</button>
+    <button onclick="playDoorClose()">ドア閉</button>
+    <button onclick="playNext()">次</button>
+    <br>
+    <img id="nextStopButton" src="NextStop1.png" onclick="playNextStop()" alt="次止まります">
+  </div>
+
+  <div id="stationName"></div>
+
+  <audio id="audio" controls style="display:none;"></audio>
+
+  <script>
+    const audio = document.getElementById("audio");
+    const stationNameDisplay = document.getElementById("stationName");
+    const nextStopButton = document.getElementById("nextStopButton");
+
+    const audioFiles = [ 
+      { src: "0100.mp3", name: "Null" },
+      { src: "0101.mp3", name: "テキスタイルシティ" },
+      { src: "0102.mp3", name: "ピルボックスヒル" },
+      { src: "0103.mp3", name: "ダウンタウン" },
+      { src: "0104.mp3", name: "バートン駅前" },
+      { src: "0105.mp3", name: "ウエストバインウッド" },
+      { src: "0106.mp3", name: "ロックフォードヒルズ" },
+      { src: "0107.mp3", name: "ポートラドライブ駅前" },
+      { src: "0108.mp3", name: "ゴルフ場前" }
+    ];
+
+    let currentIndex = 0;
+    let nextStopPlayed = false;
+
+    function playCurrentAudio() {
+      audio.src = audioFiles[currentIndex].src;
+      audio.play();
+      stationNameDisplay.textContent = audioFiles[currentIndex].name;
+    }
+
+    function playNext() {
+      if (currentIndex < audioFiles.length - 1) {
+        currentIndex++;
+        setTimeout(() => {
+          playCurrentAudio();
+        }, 200);
+        if (nextStopPlayed) {
+          nextStopButton.src = "NextStop1.png";
+          nextStopButton.onclick = playNextStop;
+          nextStopPlayed = false;
+        }
+      }
+    }
+
+    function playPrevious() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        playCurrentAudio();
+      }
+    }
+
+    function playDoorOpen() {
+      audio.src = "dooropen.mp3";
+      audio.play();
+      if (nextStopPlayed) {
+        nextStopButton.src = "NextStop1.png";
+        nextStopButton.onclick = playNextStop;
+        nextStopPlayed = false;
+      }
+    }
+
+    function playDoorClose() {
+      audio.src = "doorclose.mp3";
+      audio.play();
+    }
+
+    function playNextStop() {
+      nextStopButton.src = "NextStop2.png";
+      nextStopButton.onclick = null;
+      nextStopPlayed = true;
+
+      if (!audio.paused && !audio.ended) {
+        // 他の音源が再生中なら NextStop.mp3 を別の Audio インスタンスで再生
+        const nextStopAudio = new Audio("NextStop.mp3");
+        nextStopAudio.play();
+
+        // 元の音源が終わったら 0.5 秒後に NextStop2.mp3 を再生
+        const checkInterval = setInterval(() => {
+          if (audio.ended) {
+            clearInterval(checkInterval);
+            setTimeout(() => {
+              audio.src = "NextStop2.mp3";
+              audio.play();
+            }, 500);
+          }
+        }, 100);
+
+      } else {
+        // 他の音源が再生されていなければ、NextStop → NextStop2 を順番に再生
+        audio.src = "NextStop.mp3";
+        audio.play();
+        audio.onended = () => {
+          audio.onended = null;
+          setTimeout(() => {
+            audio.src = "NextStop2.mp3";
+            audio.play();
+          }, 500);
+        };
+      }
+    }
+
+    playCurrentAudio();
+  </script>
+</body>
+
+</html>
